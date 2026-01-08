@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UiTM E-Course Portal (Responsive)</title>
+    <link rel="icon" type="image/png" href="logo.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -42,6 +43,7 @@
         }
 
         .brand { padding: 20px; font-size: 1.5rem; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;}
+        .brand img { height: 40px; max-width: 100%; object-fit: contain; }
         .brand span { color: var(--uitm-gold); }
         .close-sidebar-btn { display: none; background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
 
@@ -73,6 +75,7 @@
         
         .hamburger { display: none; font-size: 1.5rem; cursor: pointer; color: var(--uitm-purple); margin-right: 15px; }
         .header-left { display: flex; align-items: center; }
+        .mobile-logo { height: 30px; display: none; cursor: pointer; }
 
         .notification-bell { position: relative; cursor: pointer; font-size: 1.2rem; margin-right: 15px;}
         .badge {
@@ -159,8 +162,11 @@
             
             .main-content { margin-left: 0; padding: 15px; }
             
-            .hamburger { display: block; }
-            .header-title h2 { font-size: 1.2rem; }
+                        .hamburger { display: block; }
+            
+                        .mobile-logo { display: block; }
+            
+                        .header-title h2 { font-size: 1.2rem; }
             .header-title p { font-size: 0.75rem; }
 
             /* Adjust Modal for Mobile */
@@ -179,9 +185,9 @@
 
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
-        <div class="brand">
-            <div><i class="fa-solid fa-graduation-cap"></i> UiTM <span>eCourse</span></div>
-            <button class="close-sidebar-btn" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
+        <div class="brand" onclick="switchView('dashboard'); toggleSidebarIfMobile()" style="cursor: pointer;">
+            <img src="logo.png" alt="UiTM eCourse Logo">
+            <button class="close-sidebar-btn" onclick="event.stopPropagation(); toggleSidebar()"><i class="fas fa-times"></i></button>
         </div>
         <ul class="nav-links">
             <li><a onclick="switchView('dashboard'); toggleSidebarIfMobile()" id="nav-dashboard" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
@@ -197,6 +203,7 @@
         <header>
             <div class="header-left">
                 <div class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
+                <img src="logo.png" alt="UiTM Logo" class="mobile-logo" onclick="switchView('dashboard')">
             </div>
             <div class="user-info" style="display:flex; align-items:center;">
                 <div class="notification-bell" onclick="toggleNotifications()">
@@ -234,6 +241,17 @@
                     </div>
                 </div>
 
+                <!-- My Registered Courses (NEW) -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>My Courses</h3>
+                        <span class="badge" style="background:var(--success); position:static;" id="dashboard-course-count">0</span>
+                    </div>
+                    <ul id="dashboard-course-list" style="list-style: none; font-size: 0.9rem;">
+                        <li style="color: #999; text-align: center; padding: 10px;">No courses registered yet.</li>
+                    </ul>
+                </div>
+
                 <!-- Fees Shortcut -->
                 <div class="card">
                     <div class="card-header"><h3>Financial Status</h3></div>
@@ -259,6 +277,9 @@
                 <div class="card-header">
                     <h3>Course Registration</h3>
                     <span>Credits: <strong id="credit-hours">0</strong></span>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <input type="text" id="course-search" onkeyup="filterCourses()" placeholder="Search by code or name..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
                 </div>
                 <div class="table-responsive">
                     <table>
@@ -404,6 +425,7 @@
     <div class="modal" id="validationModal">
         <div class="modal-content" style="text-align: center;">
             <span class="close-btn" onclick="closeModal('validationModal')">&times;</span>
+            <img src="logo.png" alt="UiTM Logo" style="height: 50px; margin-bottom: 15px;">
             <div style="font-size: 3rem; color: var(--success); margin-bottom: 10px;"><i class="fas fa-check-circle"></i></div>
             <h3>Registration Successful!</h3>
             <p style="color: #666; margin: 10px 0;">Your course registration slip has been generated.</p>
@@ -459,6 +481,7 @@
             { 
                 code: "CSC577", 
                 name: "Software Engineering", 
+                description: "Introduction to software development life cycle, agile methodologies, and project management.",
                 group: "CS2405A",
                 credits: 3,
                 lecturer: "Dr. Aminah Binti Ahmad",
@@ -468,6 +491,7 @@
             { 
                 code: "ICT600", 
                 name: "Data Science Essentials", 
+                description: "Fundamental concepts of data science, including data manipulation, visualization, and basic machine learning.",
                 group: "CS2405A",
                 credits: 3,
                 lecturer: "Assoc. Prof. Dr. Rahim",
@@ -477,6 +501,7 @@
             { 
                 code: "ENT530", 
                 name: "Principles of Entrep.", 
+                description: "Developing an entrepreneurial mindset, identifying business opportunities, and business planning.",
                 group: "CS2405A", 
                 credits: 2,
                 lecturer: "Pn. Siti Sarah",
@@ -486,6 +511,7 @@
             { 
                 code: "TMC401", 
                 name: "Intro Mandarin I", 
+                description: "Basic Mandarin language skills for beginners, focusing on conversation and basic characters.",
                 group: "CS2405B", 
                 credits: 2,
                 lecturer: "Mr. Wong",
@@ -495,6 +521,28 @@
         ];
 
         let registeredCredits = 0;
+        let registeredCoursesList = [];
+
+        function filterCourses() {
+            const input = document.getElementById('course-search');
+            const filter = input.value.toUpperCase();
+            const table = document.getElementById('course-table');
+            const tr = table.getElementsByTagName('tr');
+
+            for (let i = 0; i < tr.length; i++) {
+                const tdCode = tr[i].getElementsByTagName('td')[0];
+                const tdName = tr[i].getElementsByTagName('td')[1];
+                if (tdCode || tdName) {
+                    const txtValueCode = tdCode.textContent || tdCode.innerText;
+                    const txtValueName = tdName.textContent || tdName.innerText;
+                    if (txtValueCode.toUpperCase().indexOf(filter) > -1 || txtValueName.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }       
+            }
+        }
 
         function renderCourses() {
             const tbody = document.getElementById('course-table');
@@ -506,8 +554,8 @@
                     <td>${course.name}</td>
                     <td>${course.group}</td>
                     <td>
-                        <button class="btn btn-info" onclick="viewCourseDetails(${index})" title="View Timetable">
-                            <i class="fas fa-eye"></i>
+                        <button class="btn btn-info" onclick="viewCourseDetails(${index})" title="View Details">
+                            <i class="fas fa-eye"></i> Info
                         </button>
                     </td>
                     <td id="status-${index}"><span style="color:gray; font-size:0.9rem">Pending</span></td>
@@ -523,24 +571,45 @@
             const course = availableCourses[index];
             const contentDiv = document.getElementById('course-details-content');
             
+            // Check if already registered to disable button in modal
+            const isRegistered = document.getElementById(`btn-add-${index}`).disabled;
+            const btnState = isRegistered ? 'disabled' : '';
+            const btnText = isRegistered ? 'Registered' : 'Register Course';
+            const btnClass = isRegistered ? 'btn-success' : 'btn-primary';
+
             contentDiv.innerHTML = `
-                <div class="detail-row"><span class="detail-label">Code:</span> <span class="detail-value">${course.code}</span></div>
-                <div class="detail-row"><span class="detail-label">Course:</span> <span class="detail-value">${course.name}</span></div>
+                <div style="background: #f0f0f5; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <h4 style="color: var(--uitm-purple); margin-bottom: 5px;">${course.code} - ${course.name}</h4>
+                    <p style="font-size: 0.95rem; color: #555;">${course.description}</p>
+                </div>
+                
                 <div class="detail-row"><span class="detail-label">Group:</span> <span class="detail-value">${course.group}</span></div>
                 <div class="detail-row"><span class="detail-label">Credit Hrs:</span> <span class="detail-value">${course.credits}</span></div>
-                <br>
                 <div class="detail-row"><span class="detail-label">Lecturer:</span> <span class="detail-value">${course.lecturer}</span></div>
                 <div class="detail-row"><span class="detail-label">Location:</span> <span class="detail-value">${course.venue}</span></div>
                 <div class="detail-row"><span class="detail-label">Time:</span> <span class="detail-value" style="color:#d9534f">${course.time}</span></div>
+                
+                <div style="margin-top: 20px; text-align: right;">
+                    <button class="btn ${btnClass}" onclick="addCourseFromModal(${index})" ${btnState} id="modal-add-btn">
+                        ${btnText}
+                    </button>
+                </div>
             `;
             
             document.getElementById('courseModal').classList.add('open');
+        }
+
+        function addCourseFromModal(index) {
+            addCourse(index);
+            closeModal('courseModal');
         }
 
         function addCourse(index) {
             const btn = document.getElementById(`btn-add-${index}`);
             const status = document.getElementById(`status-${index}`);
             
+            if(btn.disabled) return; // Prevent double add
+
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
             setTimeout(() => {
                 btn.classList.remove('btn-primary');
@@ -548,9 +617,39 @@
                 btn.innerText = "Added";
                 btn.disabled = true;
                 status.innerHTML = '<span style="color:green; font-weight:bold;">Registered</span>';
-                registeredCredits += availableCourses[index].credits;
+                
+                const course = availableCourses[index];
+                registeredCredits += course.credits;
                 document.getElementById('credit-hours').innerText = registeredCredits;
+                
+                // Add to list and update dashboard
+                registeredCoursesList.push(course);
+                updateDashboard();
             }, 500);
+        }
+
+        function updateDashboard() {
+            const listContainer = document.getElementById('dashboard-course-list');
+            document.getElementById('dashboard-course-count').innerText = registeredCoursesList.length;
+            
+            if (registeredCoursesList.length === 0) {
+                listContainer.innerHTML = '<li style="color: #999; text-align: center; padding: 10px;">No courses registered yet.</li>';
+                return;
+            }
+
+            listContainer.innerHTML = '';
+            registeredCoursesList.forEach(course => {
+                const li = document.createElement('li');
+                li.style.padding = '10px 0';
+                li.style.borderBottom = '1px solid #eee';
+                li.style.display = 'flex';
+                li.style.justifyContent = 'space-between';
+                li.innerHTML = `
+                    <span><strong>${course.code}</strong></span>
+                    <span style="color: #666; font-size: 0.85rem;">${course.group}</span>
+                `;
+                listContainer.appendChild(li);
+            });
         }
 
         // --- 4. GENERAL UTILS ---
