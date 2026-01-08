@@ -199,11 +199,11 @@
                 <div class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
             </div>
             <div class="user-info" style="display:flex; align-items:center;">
-                <div class="notification-bell">
+                <div class="notification-bell" onclick="toggleNotifications()">
                     <i class="fas fa-bell"></i>
                     <span class="badge">2</span>
                 </div>
-                <div class="profile-pic" style="width: 35px; height: 35px; background: #ddd; border-radius: 50%; display:flex; align-items:center; justify-content:center;">
+                <div class="profile-pic" onclick="toggleProfileMenu()" style="width: 35px; height: 35px; background: #ddd; border-radius: 50%; display:flex; align-items:center; justify-content:center; cursor: pointer;">
                     <i class="fas fa-user"></i>
                 </div>
             </div>
@@ -278,7 +278,7 @@
                     </table>
                 </div>
                 <div style="margin-top:20px; text-align:right;">
-                    <button class="btn btn-primary" onclick="alert('Registration Slip Generated!')">Validate & Confirm</button>
+                    <button class="btn btn-primary" onclick="openValidationModal()">Validate & Confirm</button>
                 </div>
             </div>
         </section>
@@ -308,9 +308,40 @@
         <!-- VIEW: SETTINGS -->
         <section id="view-settings" class="view-section">
             <div class="card">
-                <h3>Settings</h3>
-                <p>Profile and App settings.</p>
+                <div class="card-header">
+                    <h3>Settings</h3>
+                </div>
+                <div style="padding: 10px 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <span><i class="fas fa-moon" style="margin-right: 10px;"></i> Dark Mode</span>
+                        <label class="switch" style="position: relative; display: inline-block; width: 50px; height: 24px;">
+                            <input type="checkbox" id="toggle-darkmode">
+                            <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+                        </label>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <span><i class="fas fa-envelope" style="margin-right: 10px;"></i> Email Notifications</span>
+                        <label class="switch" style="position: relative; display: inline-block; width: 50px; height: 24px;">
+                            <input type="checkbox" checked>
+                            <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+                        </label>
+                    </div>
+                    <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+                    <button class="btn btn-primary" onclick="saveSettings()" id="btn-save-settings" style="width: 100%;">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
             </div>
+            
+            <style>
+                /* Embedded Switch Styles for Prototype */
+                .switch input { opacity: 0; width: 0; height: 0; }
+                .slider:before {
+                    position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%;
+                }
+                input:checked + .slider { background-color: var(--uitm-purple); }
+                input:checked + .slider:before { transform: translateX(26px); }
+            </style>
         </section>
     </div>
 
@@ -366,6 +397,38 @@
             <p style="margin-bottom:10px;">Amount: <strong>RM 540.00</strong></p>
             <select><option>Maybank2U</option><option>CIMB Clicks</option></select>
             <button class="btn btn-primary" style="width:100%" onclick="processPayment()">Proceed</button>
+        </div>
+    </div>
+
+    <!-- MODAL: REGISTRATION SLIP -->
+    <div class="modal" id="validationModal">
+        <div class="modal-content" style="text-align: center;">
+            <span class="close-btn" onclick="closeModal('validationModal')">&times;</span>
+            <div style="font-size: 3rem; color: var(--success); margin-bottom: 10px;"><i class="fas fa-check-circle"></i></div>
+            <h3>Registration Successful!</h3>
+            <p style="color: #666; margin: 10px 0;">Your course registration slip has been generated.</p>
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0; text-align: left; font-size: 0.9rem;">
+                <p><strong>Ref ID:</strong> REF-2023-8892</p>
+                <p><strong>Date:</strong> <span id="slip-date"></span></p>
+                <p><strong>Total Credits:</strong> <span id="slip-credits">0</span></p>
+            </div>
+            <button class="btn btn-primary" style="width:100%" onclick="closeModal('validationModal')">Download PDF</button>
+        </div>
+    </div>
+
+    <!-- MODAL: PROFILE (Simple Dropdown Simulation) -->
+    <div class="modal" id="profileModal">
+        <div class="modal-content" style="width: 300px;">
+            <span class="close-btn" onclick="closeModal('profileModal')">&times;</span>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="width: 80px; height: 80px; background: #ddd; border-radius: 50%; margin: 0 auto 10px; display:flex; align-items:center; justify-content:center; font-size: 2rem; color: #666;">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h4>Student Name</h4>
+                <p style="color: #666; font-size: 0.9rem;">2023456789</p>
+            </div>
+            <button class="btn btn-outline" style="width: 100%; margin-bottom: 10px;" onclick="switchView('settings'); closeModal('profileModal')">Settings</button>
+            <button class="btn btn-danger" style="width: 100%; background: #dc3545; color: white;" onclick="alert('Logged out successfully.'); window.location.reload();">Logout</button>
         </div>
     </div>
 
@@ -502,6 +565,57 @@
             closeModal('payModal');
             alert('Payment Successful!');
         }
+
+        // --- NEW INTERACTIVE FUNCTIONS ---
+        function toggleNotifications() {
+            alert('You have 2 unread notifications:\n1. Fees payment due soon.\n2. New course announcement.');
+        }
+
+        function toggleProfileMenu() {
+            document.getElementById('profileModal').classList.add('open');
+        }
+
+        function saveSettings() {
+            const btn = document.getElementById('btn-save-settings');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fas fa-check"></i> Saved!';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 2000);
+            }, 1000);
+            
+            // Dark Mode Logic (Prototype)
+            const darkMode = document.getElementById('toggle-darkmode').checked;
+            if(darkMode) {
+                document.documentElement.style.setProperty('--bg-color', '#1a1a2e');
+                document.documentElement.style.setProperty('--text-color', '#fff');
+            } else {
+                document.documentElement.style.setProperty('--bg-color', '#f4f6f9');
+                document.documentElement.style.setProperty('--text-color', '#333');
+            }
+        }
+
+        function openValidationModal() {
+            document.getElementById('slip-date').innerText = new Date().toLocaleDateString();
+            document.getElementById('slip-credits').innerText = registeredCredits;
+            document.getElementById('validationModal').classList.add('open');
+        }
+        
+        // Update Deferment Submit
+        document.querySelector('#deferModal .btn-primary').onclick = function() {
+            const btn = this;
+            btn.innerText = "Submitting...";
+            setTimeout(() => {
+                closeModal('deferModal');
+                alert('Deferment application submitted for review.');
+                btn.innerText = "Submit";
+            }, 800);
+        };
 
         // --- 5. CHAT SYSTEM ---
         function toggleChat() {
