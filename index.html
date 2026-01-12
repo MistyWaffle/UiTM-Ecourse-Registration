@@ -176,9 +176,58 @@
             .chat-box { width: 90%; right: 5%; bottom: 100px; height: 50vh; }
             .fab-support { width: 50px; height: 50px; font-size: 20px; bottom: 20px; right: 20px; }
         }
+
+        /* --- LOGIN PAGE --- */
+        #login-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            background: linear-gradient(135deg, var(--uitm-purple) 0%, #2a004e 100%);
+            display: flex; justify-content: center; align-items: center; z-index: 3000;
+            transition: opacity 0.5s ease;
+        }
+        .login-card {
+            background: white; padding: 40px; border-radius: 15px; width: 400px; max-width: 90%;
+            text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: fadeIn 0.8s ease;
+        }
+        .login-logo { width: 80px; margin-bottom: 20px; }
+        .login-title { font-size: 1.5rem; font-weight: bold; color: var(--uitm-purple); margin-bottom: 5px; }
+        .login-subtitle { color: #666; font-size: 0.9rem; margin-bottom: 30px; }
+        
+        .login-form input {
+            width: 100%; padding: 12px 15px; margin-bottom: 15px; border: 1px solid #ddd;
+            border-radius: 8px; font-size: 1rem; transition: 0.3s;
+        }
+        .login-form input:focus { border-color: var(--uitm-purple); outline: none; }
+        
+        .btn-login {
+            width: 100%; padding: 12px; background: var(--uitm-purple); color: white;
+            border: none; border-radius: 8px; font-size: 1rem; font-weight: bold;
+            cursor: pointer; transition: 0.3s; margin-bottom: 15px;
+        }
+        .btn-login:hover { background: var(--uitm-light-purple); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
+
+    <!-- Login Screen -->
+    <div id="login-container">
+        <div class="login-card">
+            <img src="logo.png" alt="UiTM Logo" class="login-logo">
+            <div class="login-title">SchoolarSync</div>
+            <div class="login-subtitle">Student E-Course Portal</div>
+            
+            <div class="login-form">
+                <input type="number" id="login-id" placeholder="Student ID" required>
+                <input type="password" id="login-pass" placeholder="Password" required>
+                <button class="btn-login" onclick="attemptLogin()">Sign In</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Content (Hidden initially) -->
+    <div id="app-container" style="display: none;">
 
     <!-- Mobile Overlay -->
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
@@ -468,11 +517,67 @@
                 <p style="color: #666; font-size: 0.9rem;">2023456789</p>
             </div>
             <button class="btn btn-outline" style="width: 100%; margin-bottom: 10px;" onclick="switchView('settings'); closeModal('profileModal')">Settings</button>
-            <button class="btn btn-danger" style="width: 100%; background: #dc3545; color: white;" onclick="alert('Logged out successfully.'); window.location.reload();">Logout</button>
+            <button class="btn btn-danger" style="width: 100%; background: #dc3545; color: white;" onclick="logout()">Logout</button>
         </div>
     </div>
 
+    </div> <!-- End of app-container -->
+
     <script>
+        // --- SESSION MANAGEMENT ---
+        // Check if user is already logged in (Session Persistence)
+        if(sessionStorage.getItem('schoolarSync_session') === 'active') {
+            // Skip login screen
+            const style = document.createElement('style');
+            style.innerHTML = '#login-container { display: none !important; } #app-container { display: block !important; }';
+            document.head.appendChild(style);
+            
+            // Wait for DOM to clean up styles properly
+            window.addEventListener('DOMContentLoaded', () => {
+                document.getElementById('login-container').style.display = 'none';
+                document.getElementById('app-container').style.display = 'block';
+            });
+        } else {
+            // Ensure inputs are clear on first open
+            window.addEventListener('DOMContentLoaded', () => {
+                if(document.getElementById('login-id')) document.getElementById('login-id').value = '';
+                if(document.getElementById('login-pass')) document.getElementById('login-pass').value = '';
+            });
+        }
+
+        function logout() {
+            sessionStorage.removeItem('schoolarSync_session');
+            alert('Logged out successfully.');
+            window.location.reload();
+        }
+
+        // --- LOGIN LOGIC ---
+        function attemptLogin() {
+            const id = document.getElementById('login-id').value;
+            const pass = document.getElementById('login-pass').value;
+            const btn = document.querySelector('.btn-login');
+            
+            if(!id || !pass) {
+                alert("Please enter both Student ID and Password.");
+                return;
+            }
+
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Authenticating...';
+            
+            setTimeout(() => {
+                // Set Session
+                sessionStorage.setItem('schoolarSync_session', 'active');
+
+                document.getElementById('login-container').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('login-container').style.display = 'none';
+                    document.getElementById('app-container').style.display = 'block';
+                    window.dispatchEvent(new Event('resize'));
+                }, 500);
+            }, 1000);
+        }
+
+        // --- 1. RESPONSIVE SIDEBAR LOGIC ---
         // --- 1. RESPONSIVE SIDEBAR LOGIC ---
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
@@ -500,7 +605,7 @@
                 code: "CSC577", 
                 name: "Software Engineering", 
                 description: "Introduction to software development life cycle, agile methodologies, and project management.",
-                group: "CS2405A",
+                groups: ["CS2405A", "CS2405B", "CS2405C"],
                 credits: 3,
                 lecturer: "Dr. Aminah Binti Ahmad",
                 venue: "DK200 (Kompleks Kuliah)",
@@ -510,7 +615,7 @@
                 code: "ICT600", 
                 name: "Data Science Essentials", 
                 description: "Fundamental concepts of data science, including data manipulation, visualization, and basic machine learning.",
-                group: "CS2405A",
+                groups: ["CS2405A", "CS2405B"],
                 credits: 3,
                 lecturer: "Assoc. Prof. Dr. Rahim",
                 venue: "Makmal 3 (Fskm)",
@@ -520,7 +625,7 @@
                 code: "ENT530", 
                 name: "Principles of Entrep.", 
                 description: "Developing an entrepreneurial mindset, identifying business opportunities, and business planning.",
-                group: "CS2405A", 
+                groups: ["CS2405A", "CS2405C", "CS2405D"], 
                 credits: 2,
                 lecturer: "Pn. Siti Sarah",
                 venue: "Dewan Taming Sari",
@@ -530,7 +635,7 @@
                 code: "TMC401", 
                 name: "Intro Mandarin I", 
                 description: "Basic Mandarin language skills for beginners, focusing on conversation and basic characters.",
-                group: "CS2405B", 
+                groups: ["CS2405B", "CS2405E"], 
                 credits: 2,
                 lecturer: "Mr. Wong",
                 venue: "Bilik Seminar 1",
@@ -566,11 +671,18 @@
             const tbody = document.getElementById('course-table');
             tbody.innerHTML = '';
             availableCourses.forEach((course, index) => {
+                // Create Group Options
+                let groupOptions = course.groups.map(g => `<option value="${g}">${g}</option>`).join('');
+
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><strong>${course.code}</strong></td>
                     <td>${course.name}</td>
-                    <td>${course.group}</td>
+                    <td>
+                        <select id="group-select-${index}" style="padding: 5px; border-radius: 4px; border: 1px solid #ddd;">
+                            ${groupOptions}
+                        </select>
+                    </td>
                     <td>
                         <button class="btn btn-info" onclick="viewCourseDetails(${index})" title="View Details">
                             <i class="fas fa-eye"></i> Info
@@ -595,13 +707,26 @@
             const btnText = isRegistered ? 'Registered' : 'Register Course';
             const btnClass = isRegistered ? 'btn-success' : 'btn-primary';
 
+            // Get current selection from main table to default the modal selection
+            const currentSelection = document.getElementById(`group-select-${index}`).value;
+            let groupOptions = course.groups.map(g => 
+                `<option value="${g}" ${g === currentSelection ? 'selected' : ''}>${g}</option>`
+            ).join('');
+
             contentDiv.innerHTML = `
                 <div style="background: #f0f0f5; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
                     <h4 style="color: var(--uitm-purple); margin-bottom: 5px;">${course.code} - ${course.name}</h4>
                     <p style="font-size: 0.95rem; color: #555;">${course.description}</p>
                 </div>
                 
-                <div class="detail-row"><span class="detail-label">Group:</span> <span class="detail-value">${course.group}</span></div>
+                <div class="detail-row">
+                    <span class="detail-label">Group:</span> 
+                    <span class="detail-value">
+                        <select id="modal-group-select-${index}" style="padding: 5px; border-radius: 4px; border: 1px solid #ddd; width: 100%;">
+                            ${groupOptions}
+                        </select>
+                    </span>
+                </div>
                 <div class="detail-row"><span class="detail-label">Credit Hrs:</span> <span class="detail-value">${course.credits}</span></div>
                 <div class="detail-row"><span class="detail-label">Lecturer:</span> <span class="detail-value">${course.lecturer}</span></div>
                 <div class="detail-row"><span class="detail-label">Location:</span> <span class="detail-value">${course.venue}</span></div>
@@ -618,15 +743,23 @@
         }
 
         function addCourseFromModal(index) {
-            addCourse(index);
+            // Get selected group from modal
+            const selectedGroup = document.getElementById(`modal-group-select-${index}`).value;
+            // Sync main table dropdown
+            document.getElementById(`group-select-${index}`).value = selectedGroup;
+            
+            addCourse(index, selectedGroup);
             closeModal('courseModal');
         }
 
-        function addCourse(index) {
+        function addCourse(index, specificGroup = null) {
             const btn = document.getElementById(`btn-add-${index}`);
             const status = document.getElementById(`status-${index}`);
             
             if(btn.disabled) return; // Prevent double add
+
+            // Use provided group or get from table dropdown
+            const selectedGroup = specificGroup || document.getElementById(`group-select-${index}`).value;
 
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
             setTimeout(() => {
@@ -634,14 +767,25 @@
                 btn.classList.add('btn-success');
                 btn.innerText = "Added";
                 btn.disabled = true;
+                
+                // Disable the dropdown to prevent changing group after adding
+                document.getElementById(`group-select-${index}`).disabled = true;
+                
                 status.innerHTML = '<span style="color:green; font-weight:bold;">Registered</span>';
                 
                 const course = availableCourses[index];
+                
+                // Create a record with the specific group
+                const registrationRecord = {
+                    ...course,
+                    selectedGroup: selectedGroup
+                };
+
                 registeredCredits += course.credits;
                 document.getElementById('credit-hours').innerText = registeredCredits;
                 
                 // Add to list and update dashboard
-                registeredCoursesList.push(course);
+                registeredCoursesList.push(registrationRecord);
                 updateDashboard();
             }, 500);
         }
@@ -656,15 +800,15 @@
             }
 
             listContainer.innerHTML = '';
-            registeredCoursesList.forEach(course => {
+            registeredCoursesList.forEach(record => {
                 const li = document.createElement('li');
                 li.style.padding = '10px 0';
                 li.style.borderBottom = '1px solid #eee';
                 li.style.display = 'flex';
                 li.style.justifyContent = 'space-between';
                 li.innerHTML = `
-                    <span><strong>${course.code}</strong></span>
-                    <span style="color: #666; font-size: 0.85rem;">${course.group}</span>
+                    <span><strong>${record.code}</strong></span>
+                    <span style="color: #666; font-size: 0.85rem;">${record.selectedGroup}</span>
                 `;
                 listContainer.appendChild(li);
             });
